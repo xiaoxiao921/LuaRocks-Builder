@@ -2,6 +2,11 @@ name: Build
 
 on:
   workflow_dispatch:
+    inputs:
+      lua_pkg_name:
+        description: 'lua pkg name'
+        required: true
+        type: string
 
 jobs:
   build:
@@ -32,7 +37,7 @@ jobs:
         
       - name: Make and install
         run: |
-          luarocks install --tree build luasocket
+          luarocks install --tree build ${{inputs.lua_pkg_name}}
         env:
           DEBUG: DEBUG
 
