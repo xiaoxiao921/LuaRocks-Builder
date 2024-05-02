@@ -1,0 +1,44 @@
+name: Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Test ${{ matrix.luaVersion }} on ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        #luaVersion: [ "5.4", "5.3", "5.2", "5.1", "luajit", "luajit-openresty" ]
+        luaVersion: [ "5.2" ]
+        #platform: [ "ubuntu-22.04", "macos-11", "windows-2022" ]
+        platform: [ "windows-2022" ]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup ’msvc’
+        if: ${{ startsWith(matrix.platform, 'windows') && !startsWith(matrix.luaVersion, 'luajit') }}
+        uses: ilammy/msvc-dev-cmd@v1
+        
+      - name: Setup ‘lua’
+        uses: leso-kn/gh-actions-lua@v11-staging
+        with:
+          luaVersion: ${{ matrix.luaVersion }}
+          
+      - name: Setup ‘luarocks’
+        uses: hishamhm/gh-actions-luarocks@master
+        
+      - name: Make and install
+        run: |
+          luarocks install --tree build luasocket
+        env:
+          DEBUG: DEBUG
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: binary
+          path: |
+            build/
